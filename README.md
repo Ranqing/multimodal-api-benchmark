@@ -19,7 +19,6 @@
 ## 启动
 
 ```bash
-cd /Users/ranqing/Projects/multimodal-api-benchmark
 python3 -m http.server 5179
 ```
 
