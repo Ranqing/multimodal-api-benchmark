@@ -1,0 +1,12 @@
+{
+  "tasks": {
+    "vqa": {
+      "prompt": "Describe this image in one sentence.",
+      "image_url": "https://example.test/sample.png"
+    },
+    "video-qa": {
+      "prompt": "Summarize this video.",
+      "video_url": "https://example.test/sample.mp4"
+    }
+  }
+}

@@ -1,0 +1,57 @@
+{
+  "benchmark_name": "multimodal_api_platform_benchmark",
+  "api_profiles": [
+    {
+      "id": "deepwl-openai-responses",
+      "platform": "DeepWL",
+      "name": "OpenAI Responses",
+      "protocol": "openai_responses",
+      "endpoint": "https://zx1.deepwl.net/v1/responses",
+      "method": "POST",
+      "auth": "Authorization: Bearer",
+      "headers": {},
+      "model": "gpt-5.5",
+      "model_options": ["claude-opus-4-8", "gpt-5.5"]
+    },
+    {
+      "id": "deepwl-claude-messages",
+      "platform": "DeepWL",
+      "name": "Claude Messages",
+      "protocol": "anthropic_messages",
+      "endpoint": "https://zx1.deepwl.net/v1/messages",
+      "method": "POST",
+      "auth": "x-api-key",
+      "headers": {
+        "anthropic-version": "2023-06-01"
+      },
+      "model": "claude-opus-4-8",
+      "model_options": ["claude-opus-4-8", "gpt-5.5"]
+    },
+    {
+      "id": "antdigital-modelservice-1779371228498001025",
+      "platform": "Ant Digital DTMaaS",
+      "name": "ModelService 1779371228498001025",
+      "protocol": "antdigital_modelservice",
+      "endpoint": "https://example.test/antdigital",
+      "method": "POST",
+      "auth": "custom",
+      "headers": {},
+      "model": "gpt-5.5"
+    }
+  ],
+  "tasks": [
+    {
+      "id": "vqa",
+      "title": "Single image VQA",
+      "metrics": ["accuracy", "latency"]
+    }
+  ],
+  "runner": {
+    "repeatCount": 1,
+    "concurrencyLevels": [1],
+    "timeoutSeconds": 120,
+    "maxTokens": 128,
+    "temperature": 0.2,
+    "streaming": false
+  }
+}
