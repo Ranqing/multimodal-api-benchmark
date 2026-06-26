@@ -1,0 +1,246 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>多模态 API 测评台</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar" aria-label="平台配置">
+        <div class="brand">
+          <div class="brand-mark" aria-hidden="true">MM</div>
+          <div>
+            <h1>多模态 API 测评台</h1>
+            <p>Claude / GPT / DTMaaS</p>
+          </div>
+        </div>
+
+        <section class="panel compact">
+          <div class="panel-head">
+            <h2>平台连接</h2>
+            <button class="icon-button" id="resetConfig" title="重置配置" aria-label="重置配置">
+              <span aria-hidden="true">↻</span>
+            </button>
+          </div>
+          <div id="platformList" class="platform-list"></div>
+        </section>
+
+        <section class="panel compact">
+          <div class="panel-head">
+            <h2>评分权重</h2>
+            <span class="muted" id="weightTotal">100%</span>
+          </div>
+          <label class="range-row">
+            <span>多模态能力</span>
+            <input type="range" min="10" max="70" value="40" data-weight="capability" />
+            <strong id="capabilityValue">40</strong>
+          </label>
+          <label class="range-row">
+            <span>响应性能</span>
+            <input type="range" min="10" max="60" value="25" data-weight="performance" />
+            <strong id="performanceValue">25</strong>
+          </label>
+          <label class="range-row">
+            <span>稳定性</span>
+            <input type="range" min="10" max="50" value="20" data-weight="stability" />
+            <strong id="stabilityValue">20</strong>
+          </label>
+          <label class="range-row">
+            <span>成本易用性</span>
+            <input type="range" min="5" max="40" value="15" data-weight="cost" />
+            <strong id="costValue">15</strong>
+          </label>
+        </section>
+      </aside>
+
+      <main class="workspace">
+        <header class="topbar">
+          <div>
+            <p class="eyebrow">本地评测控制台</p>
+            <h2>为三家直连大模型 API 平台建立统一性能与能力基准</h2>
+          </div>
+          <div class="top-actions">
+            <button id="exportJson" class="secondary">导出配置</button>
+            <button id="exportCsv" class="secondary">导出结果 CSV</button>
+            <button id="runMock" class="primary">生成样例结果</button>
+          </div>
+        </header>
+
+        <nav class="tabs" aria-label="页面视图">
+          <button class="tab active" data-tab="overview">概览</button>
+          <button class="tab" data-tab="profiles">接口档案</button>
+          <button class="tab" data-tab="suite">测试套件</button>
+          <button class="tab" data-tab="runner">运行配置</button>
+          <button class="tab" data-tab="results">结果分析</button>
+        </nav>
+
+        <section class="tab-panel active" id="overview">
+          <div class="metric-grid">
+            <article class="metric">
+              <span>接口档案</span>
+              <strong id="platformCount">3</strong>
+              <small>按文档独立测试</small>
+            </article>
+            <article class="metric">
+              <span>已选模型</span>
+              <strong id="modelCount">0</strong>
+              <small>每个接口档案一个</small>
+            </article>
+            <article class="metric">
+              <span>测试任务</span>
+              <strong id="taskCount">0</strong>
+              <small>覆盖图像/视频/生成</small>
+            </article>
+            <article class="metric">
+              <span>预计请求</span>
+              <strong id="requestCount">0</strong>
+              <small>随并发和重复次数变化</small>
+            </article>
+          </div>
+
+          <div class="overview-layout">
+            <section class="panel">
+              <div class="panel-head">
+                <h2>综合评分预览</h2>
+                <span class="status-pill">离线样例</span>
+              </div>
+              <canvas id="scoreChart" width="1200" height="430" aria-label="综合评分图表"></canvas>
+            </section>
+
+            <section class="panel insight-panel">
+              <div class="panel-head">
+                <h2>测评逻辑</h2>
+              </div>
+              <div class="logic-list">
+                <div>
+                  <span class="logic-index">1</span>
+                  <p>同模型跨平台比延迟、TTFT、错误率和限流。</p>
+                </div>
+                <div>
+                  <span class="logic-index">2</span>
+                  <p>同任务跨模型比 OCR、VQA、图表和多图推理。</p>
+                </div>
+                <div>
+                  <span class="logic-index">3</span>
+                  <p>生成类任务单独统计排队、完成时间和产物评分。</p>
+                </div>
+                <div>
+                  <span class="logic-index">4</span>
+                  <p>输出配置文件给后端 runner，结果 CSV 可直接汇总。</p>
+                </div>
+              </div>
+            </section>
+          </div>
+        </section>
+
+        <section class="tab-panel" id="profiles">
+          <div class="profile-grid" id="profileList"></div>
+        </section>
+
+        <section class="tab-panel" id="suite">
+          <div class="suite-grid" id="taskSuite"></div>
+        </section>
+
+        <section class="tab-panel" id="runner">
+          <div class="runner-layout">
+            <section class="panel">
+              <div class="panel-head">
+                <h2>负载设置</h2>
+              </div>
+              <div class="form-grid">
+                <label>
+                  <span>重复次数</span>
+                  <input id="repeatCount" type="number" min="1" max="20" value="3" />
+                </label>
+                <label>
+                  <span>并发档位</span>
+                  <input id="concurrencyLevels" type="text" value="1,2,5,10" />
+                </label>
+                <label>
+                  <span>超时秒数</span>
+                  <input id="timeoutSeconds" type="number" min="10" max="600" value="120" />
+                </label>
+                <label>
+                  <span>输出 token 上限</span>
+                  <input id="maxTokens" type="number" min="64" max="8192" value="1024" />
+                </label>
+                <label>
+                  <span>温度</span>
+                  <input id="temperature" type="number" min="0" max="2" step="0.1" value="0.2" />
+                </label>
+                <label>
+                  <span>传图方式</span>
+                  <select id="imageMode">
+                    <option value="image_url">image_url</option>
+                    <option value="base64">base64</option>
+                    <option value="file_upload">file_upload</option>
+                  </select>
+                </label>
+              </div>
+              <div class="switch-row">
+                <label class="switch">
+                  <input id="streaming" type="checkbox" checked />
+                  <span></span>
+                  流式响应
+                </label>
+                <label class="switch">
+                  <input id="randomOrder" type="checkbox" checked />
+                  <span></span>
+                  随机化请求顺序
+                </label>
+                <label class="switch">
+                  <input id="saveRaw" type="checkbox" />
+                  <span></span>
+                  保存原始响应
+                </label>
+              </div>
+            </section>
+
+            <section class="panel">
+              <div class="panel-head">
+                <h2>导出的 Runner 配置</h2>
+                <button id="copyConfig" class="secondary">复制</button>
+              </div>
+              <pre id="configPreview" class="code-preview"></pre>
+            </section>
+          </div>
+        </section>
+
+        <section class="tab-panel" id="results">
+          <section class="panel">
+            <div class="panel-head">
+              <h2>结果明细</h2>
+              <div class="table-tools">
+                <input id="tableFilter" type="search" placeholder="筛选平台、接口、模型或任务" />
+              </div>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>平台</th>
+                    <th>接口档案</th>
+                    <th>模型</th>
+                    <th>任务</th>
+                    <th>能力</th>
+                    <th>p95 延迟</th>
+                    <th>TTFT</th>
+                    <th>成功率</th>
+                    <th>成本</th>
+                    <th>总分</th>
+                  </tr>
+                </thead>
+                <tbody id="resultRows"></tbody>
+              </table>
+            </div>
+          </section>
+        </section>
+      </main>
+    </div>
+
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+    <script src="./app.js"></script>
+  </body>
+</html>
