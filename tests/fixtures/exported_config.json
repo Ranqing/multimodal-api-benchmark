@@ -28,15 +28,30 @@
       "model_options": ["claude-opus-4-8", "gpt-5.5"]
     },
     {
-      "id": "antdigital-modelservice-1779371228498001025",
+      "id": "antdigital-claude-messages",
       "platform": "Ant Digital DTMaaS",
-      "name": "ModelService 1779371228498001025",
-      "protocol": "antdigital_modelservice",
-      "endpoint": "https://example.test/antdigital",
+      "name": "Claude Messages",
+      "protocol": "anthropic_messages",
+      "endpoint": "https://maas-api.antdigital.com/v1/messages",
       "method": "POST",
-      "auth": "custom",
+      "auth": "x-api-key",
+      "headers": {
+        "anthropic-version": "2023-06-01"
+      },
+      "model": "claude-opus-4-8",
+      "model_options": ["claude-opus-4-8", "gpt-5.5"]
+    },
+    {
+      "id": "antdigital-openai-chat",
+      "platform": "Ant Digital DTMaaS",
+      "name": "OpenAI Chat Completions",
+      "protocol": "openai_chat",
+      "endpoint": "https://maas-api.antdigital.com/v1/chat/completions",
+      "method": "POST",
+      "auth": "Authorization: Bearer",
       "headers": {},
-      "model": "gpt-5.5"
+      "model": "gpt-5.5",
+      "model_options": ["claude-opus-4-8", "gpt-5.5"]
     }
   ],
   "tasks": [

@@ -5,6 +5,7 @@ from pathlib import Path
 from typing import Any
 
 
+# Keep in sync with output_schema in app.js currentConfig()
 DEFAULT_OUTPUT_SCHEMA = [
     "run_id",
     "platform",
@@ -84,7 +85,10 @@ def _parse_concurrency(value: Any) -> list[int]:
         values = [value]
     levels = []
     for item in values:
-        number = int(item)
+        try:
+            number = int(item)
+        except (ValueError, TypeError):
+            continue
         if number > 0:
             levels.append(number)
     return levels or [1]

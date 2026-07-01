@@ -108,6 +108,27 @@ class OpenAIResponsesAdapter(BaseAdapter):
         return RequestSpec(profile.get("method", "POST"), profile["endpoint"], headers, body, self._input_mode(task, runner))
 
 
+class OpenAIChatAdapter(BaseAdapter):
+    protocol = "openai_chat"
+
+    def build(self, profile: dict[str, Any], task: dict[str, Any], runner: dict[str, Any], api_key: str) -> RequestSpec:
+        headers = self._base_headers(profile)
+        headers["Authorization"] = f"Bearer {api_key}"
+        content: list[dict[str, Any]] = []
+        image_url = self._image_url(task, runner)
+        if image_url:
+            content.append({"type": "image_url", "image_url": {"url": image_url, "detail": "high"}})
+        content.append({"type": "text", "text": self._common_text(task)})
+        body = {
+            "model": profile["model"],
+            "messages": [{"role": "user", "content": content}],
+            "max_tokens": int(runner.get("maxTokens") or runner.get("max_tokens") or 1024),
+            "temperature": float(runner.get("temperature", 0.2)),
+            "stream": bool(runner.get("streaming", False)),
+        }
+        return RequestSpec(profile.get("method", "POST"), profile["endpoint"], headers, body, self._input_mode(task, runner))
+
+
 class TemplateJsonAdapter(BaseAdapter):
     protocol = "template_json"
 
@@ -138,6 +159,7 @@ class TemplateJsonAdapter(BaseAdapter):
 ADAPTERS: dict[str, BaseAdapter] = {
     AnthropicMessagesAdapter.protocol: AnthropicMessagesAdapter(),
     OpenAIResponsesAdapter.protocol: OpenAIResponsesAdapter(),
+    OpenAIChatAdapter.protocol: OpenAIChatAdapter(),
     TemplateJsonAdapter.protocol: TemplateJsonAdapter(),
     "antdigital_modelservice": TemplateJsonAdapter(),
 }

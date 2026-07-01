@@ -15,7 +15,7 @@ const defaultState = {
       id: "antdigital",
       name: "Ant Digital DTMaaS",
       docs: "https://maas.antdigital.com/models",
-      endpoint: "按控制台 API 文档填写",
+      endpoint: "https://maas-api.antdigital.com",
       models: fixedModelOptions,
       selectedModel: "gpt-5.5",
       keySaved: false
@@ -66,36 +66,38 @@ const defaultState = {
       notes: "用于测试 GPT 系列 Responses API 的多模态理解、结构化输出和流式响应。"
     },
     {
-      id: "antdigital-modelservice-1779371228498001025",
+      id: "antdigital-claude-messages",
       platformId: "antdigital",
       platform: "Ant Digital DTMaaS",
-      name: "ModelService 1779371228498001025",
-      protocol: "antdigital_modelservice",
-      docs: "https://maas.antdigital.com/models/modelservice-1779371228498001025",
-      endpoint: "按模型服务页填写",
+      name: "Claude Messages",
+      protocol: "anthropic_messages",
+      docs: "https://maas.antdigital.com/models",
+      endpoint: "https://maas-api.antdigital.com/v1/messages",
       method: "POST",
-      auth: "按 DTMaaS 控制台鉴权填写",
-      headers: {},
+      auth: "x-api-key",
+      headers: {
+        "anthropic-version": "2023-06-01"
+      },
       models: fixedModelOptions,
-      selectedModel: "gpt-5.5",
-      multimodalInput: "按模型服务页的请求示例适配图片/视频字段",
-      notes: "作为 Ant Digital 第一个指定模型服务的独立压测目标。"
+      selectedModel: "claude-opus-4-8",
+      multimodalInput: "messages[].content[] 使用 type=image，source.type=url，source.url 为图片地址",
+      notes: "Ant Digital 上的 Claude Messages 接口，支持图像理解和流式输出。"
     },
     {
-      id: "antdigital-modelservice-1780022931241001664",
+      id: "antdigital-openai-chat",
       platformId: "antdigital",
       platform: "Ant Digital DTMaaS",
-      name: "ModelService 1780022931241001664",
-      protocol: "antdigital_modelservice",
-      docs: "https://maas.antdigital.com/models/modelservice-1780022931241001664",
-      endpoint: "按模型服务页填写",
+      name: "OpenAI Chat Completions",
+      protocol: "openai_chat",
+      docs: "https://maas.antdigital.com/models",
+      endpoint: "https://maas-api.antdigital.com/v1/chat/completions",
       method: "POST",
-      auth: "按 DTMaaS 控制台鉴权填写",
+      auth: "Authorization: Bearer",
       headers: {},
       models: fixedModelOptions,
       selectedModel: "gpt-5.5",
-      multimodalInput: "按模型服务页的请求示例适配图片/视频字段",
-      notes: "作为 Ant Digital 第二个指定模型服务的独立压测目标。"
+      multimodalInput: "messages[].content[] 使用 type=image_url，image_url.url 传图片地址",
+      notes: "Ant Digital 上的 OpenAI Chat Completions 接口，支持多模态推理与流式输出。可用模型请通过 GET /v1/models 查询。"
     }
   ],
   weights: {
@@ -418,6 +420,7 @@ function currentConfig() {
       normalized: normalizeWeights(state.weights),
       total: totalWeight
     },
+    // Keep in sync with DEFAULT_OUTPUT_SCHEMA in runner/config.py
     output_schema: [
       "run_id",
       "platform",
