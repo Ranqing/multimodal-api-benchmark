@@ -2,7 +2,7 @@ import unittest
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
-from runner.adapters import AnthropicMessagesAdapter, OpenAIResponsesAdapter, TemplateJsonAdapter, api_key_for
+from runner.adapters import AnthropicMessagesAdapter, OpenAIChatAdapter, OpenAIResponsesAdapter, TemplateJsonAdapter, api_key_for
 from runner.config import load_config, normalize_config
 from runner.core import RunOptions, load_samples, parse_sse, run_benchmark, write_csv, write_jsonl
 
@@ -129,6 +129,46 @@ class RunnerTests(unittest.TestCase):
         self.assertEqual(len(rows), 1)
         self.assertEqual(rows[0]["profile"], "OpenAI Responses")
         self.assertEqual(rows[0]["task_type"], "vqa")
+
+    def test_openai_chat_adapter_builds_chat_completions_format(self):
+        spec = OpenAIChatAdapter().build(
+            {
+                "protocol": "openai_chat",
+                "endpoint": "https://maas-api.antdigital.com/v1/chat/completions",
+                "method": "POST",
+                "headers": {},
+                "model": "gpt-5.5",
+            },
+            {"id": "vqa", "prompt": "Describe this image.", "image_url": "https://example.test/img.png"},
+            {"maxTokens": 1024, "temperature": 0.2, "streaming": False},
+            "key",
+        )
+        self.assertEqual(spec.headers["Authorization"], "Bearer key")
+        self.assertEqual(spec.body["model"], "gpt-5.5")
+        self.assertEqual(spec.body["messages"][0]["role"], "user")
+        content = spec.body["messages"][0]["content"]
+        self.assertEqual(content[0]["type"], "image_url")
+        self.assertEqual(content[0]["image_url"]["url"], "https://example.test/img.png")
+        self.assertEqual(content[1]["type"], "text")
+        self.assertEqual(content[1]["text"], "Describe this image.")
+        self.assertEqual(spec.input_mode, "image_url")
+
+    def test_openai_chat_no_image_falls_to_text(self):
+        spec = OpenAIChatAdapter().build(
+            {
+                "protocol": "openai_chat",
+                "endpoint": "https://maas-api.antdigital.com/v1/chat/completions",
+                "method": "POST",
+                "headers": {},
+                "model": "gpt-5.5",
+            },
+            {"id": "vqa", "prompt": "Text only"},
+            {"streaming": False},
+            "key",
+        )
+        self.assertEqual(spec.input_mode, "text")
+        self.assertEqual(len(spec.body["messages"][0]["content"]), 1)
+        self.assertEqual(spec.body["messages"][0]["content"][0]["type"], "text")
 
     def test_missing_media_falls_back_to_text_only(self):
         spec = OpenAIResponsesAdapter().build(

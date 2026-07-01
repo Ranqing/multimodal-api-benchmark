@@ -118,7 +118,7 @@ def _run_one(
             base["tokens_per_second"] = round(output_tokens / latency_seconds, 2)
         base["stability_score"] = 100 if int(base["status_code"]) < 500 else 0
         return base
-    except (AdapterError, HTTPError, URLError, TimeoutError, OSError, ValueError) as exc:
+    except (AdapterError, HTTPError, URLError, TimeoutError, OSError, ValueError, TypeError) as exc:
         base["error_type"] = exc.__class__.__name__
         base["latency_ms"] = round((time.perf_counter() - started) * 1000)
         if isinstance(exc, HTTPError):
@@ -178,7 +178,7 @@ def _send(method: str, url: str, headers: dict[str, str], body: dict[str, Any], 
     return {
         "status_code": response.status,
         "ttfb_ms": ttfb_ms,
-        "ttft_ms": ttft_ms,
+        "ttft_ms": "",
         "output_text": _extract_output_text(parsed_json) or text,
         "output_tokens": _extract_usage(parsed_json).get("output_tokens", ""),
         "raw_response": text,
